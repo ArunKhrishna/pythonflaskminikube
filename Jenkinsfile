@@ -2,18 +2,26 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS = 'dockerhub-creds'  // Jenkins credentials ID for DockerHub
-        DOCKER_IMAGE = 'jefrinpeter/jefrindockerimage'
+        DOCKER_CREDENTIALS = 'dockerhub-credss' // Jenkins credentials ID for DockerHub
+        DOCKER_IMAGE = 'arunkhrishnadocker/arundockerimage' // Updated image name
         DOCKER_TAG = 'latest'
-        GIT_REPO = 'https://github.com/Jeffy287/k8s-deployment.git'
-        GIT_BRANCH = 'main'
-        KUBECONFIG = 'C:/ProgramData/Jenkins/.kube/config'  // 👈 Important for Minikube access
+        GIT_REPO = 'https://github.com/ArunKhrishna/pythonflaskminikube.git' // GitHub repository
+        GIT_BRANCH = 'main' // Branch to deploy
+        KUBECONFIG = 'C:/ProgramData/Jenkins/.kube/config' // Important for Minikube access
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 git url: "${GIT_REPO}", branch: "${GIT_BRANCH}"
+                bat 'dir /s' // To confirm folder structure after checkout
+            }
+        }
+
+        // Debugging stage to check workspace structure
+        stage('Debug Workspace') {
+            steps {
+                bat 'dir /s'
             }
         }
 
@@ -25,9 +33,15 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: "${DOCKER_CREDENTIALS}",
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
                     bat """
-                        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin
+                        docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
                         docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                 }
@@ -37,6 +51,7 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 bat 'kubectl config use-context minikube'
+                // Use the correct relative path from the repository root to your YAML files
                 bat 'kubectl apply -f k8s/deployment.yaml'
                 bat 'kubectl apply -f k8s/service.yaml'
             }
