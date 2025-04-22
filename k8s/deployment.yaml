@@ -1,0 +1,23 @@
+# k8s/k8s-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+spec:
+  replicas: 3  # Number of pods to run
+  selector:
+    matchLabels:
+      app: website  # Label to match for the deployment
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+        - name: website
+          image: jefrinpeter/jefrindockerimage:latest  # Docker image name
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80  # Port inside the container
+

@@ -1,0 +1,14 @@
+# k8s/k8s-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: website-service
+spec:
+  selector:
+    app: website  # Match the label from the deployment
+  ports:
+    - protocol: TCP
+      port: 8081       # Externally accessible port
+      targetPort: 80   # Port inside the container
+  type: LoadBalancer  # Change to NodePort if using Minikube and LoadBalancer is unavailable
